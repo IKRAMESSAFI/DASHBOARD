@@ -1,6 +1,5 @@
 import streamlit as st
 def app():
-    
     import os
     from PIL import Image
     import geopandas as gpd
@@ -25,6 +24,12 @@ def app():
         response1 = requests.get(url1)
         with rasterio.open(BytesIO(response1.content)) as dataset:
             return dataset.read(1)  # Assuming a single band GeoTIFF
+
+    def display_loading_message():
+        """Display a loading message while data is being loaded."""
+        with st.spinner("Chargement des données en cours ... veuillez patienter un peu..."):
+            # Simulate a loading delay
+            time.sleep(20)
 
     # Fonction pour convertir une image en base64
     def image_to_base64(image_path):
@@ -74,9 +79,22 @@ def app():
     st.title(f" Timelapses permettant  de naviguer entre les différents jours de l'attribut {selected_attribute}")
 
     # Utiliser leafmap pour créer le timelapse
+    # Utiliser leafmap pour créer le timelapse
     output_dir = "output_directory"
     # Check and create the directory if it doesn't exist
-    os.makedirs(output_dir, exist_ok=True)
+    try:
+        os.makedirs(output_dir, exist_ok=True)
+        print(f"Output Directory: {output_dir}")
+    except Exception as e:
+        print(f"Error creating directory: {e}")
+
+    output_gif_path = os.path.join(output_dir, f'output_timelapse_{selected_attribute}.gif')
+
+    try:
+        os.makedirs(output_dir, exist_ok=True)
+        print(f"Output Directory: {output_dir}")
+    except Exception as e:
+        print(f"Error creating directory: {e}")
 
     output_gif_path = os.path.join(output_dir, f'output_timelapse_{selected_attribute}.gif')
 
@@ -109,14 +127,18 @@ def app():
         with imageio.get_writer(gif_path, mode='I', duration=1000, loop=0) as writer:
             for frame_path in [f"frame_{i}.png" for i in range(len(pil_images))]:
                 img = imageio.imread(os.path.join(output_dir, frame_path))
-                writer.append_data(img)
+                resized_img = Image.fromarray(img).resize((800, 960), resample=Image.LANCZOS)
+                writer.append_data(resized_img)
 
     except Exception as e:
         st.error(f"Erreur lors de la création du timelapse : {e}")
         st.stop()
 
     # Obtenir les limites (bounds) à partir des données GeoParquet
-    bounds = gdf.total_bounds.reshape((2, 2)).tolist()
+    bounds = [
+        [gdf.bounds.miny.min(), gdf.bounds.minx.min()],
+        [gdf.bounds.maxy.max(), gdf.bounds.maxx.max()]
+    ]
 
     # Créer la carte Folium
     m = folium.Map(location=[31.5, -7], zoom_start=5, width=800, height=960)
@@ -132,7 +154,7 @@ def app():
     # Ajouter le contrôle de calque à la carte
     folium.LayerControl().add_to(m)
 
-    # Define vmin, vmax, and class_limits based on the selected attribute
+    # Define vmin, vmax, and class_limits based on the selected attribute for URL1
     if selected_attribute == 'Indice_Q':
         vmin = 0
         vmax = 100
