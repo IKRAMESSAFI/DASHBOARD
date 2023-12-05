@@ -20,8 +20,9 @@ def app():
         return gpd.read_parquet(file_path)
 
     # Charger la GeoDataFrame depuis le fichier geoparquet
-    path = "C:\\Users\\medam\\Downloads\\streamlit\\DONNEE_MAROC.parquet"
-    gdf = gpd.read_parquet(path)
+    file_url ="https://ikramessafi.github.io/DATAPARQUET/DONNEE_MAROC.parquet"
+    file_path = download_file(file_url)
+    gdf = gpd.read_parquet(file_path)
     with st.spinner("Chargement des données en cours ... veuillez patienter un peu..."):
         # Mettre en pause pendant 2 secondes pour simuler un chargement long
         time.sleep(80)
