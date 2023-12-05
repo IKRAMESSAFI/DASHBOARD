@@ -83,7 +83,9 @@ def app():
     st.title(f" Timelapses permettant  de naviguer entre les différents jours de l'attribut {selected_attribute}")
 
     # Utiliser leafmap pour créer le timelapse
-    output_dir = "/absolute/path/to/directory"
+    o# Use a default directory path
+    output_dir = "/home/user/timelapse_frames"
+
     # Check and create the directory if it doesn't exist
     try:
         os.makedirs(output_dir, exist_ok=True)
