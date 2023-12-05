@@ -124,11 +124,12 @@ def app():
 
         # Create GIF from resized static images
         gif_path = os.path.join(output_dir, f'output_timelapse_{selected_attribute}.gif')
-        with imageio.get_writer(gif_path, mode='I', duration=1000, loop=0) as writer:
+        with imageio.get_writer(gif_path, mode='I', duration=1000, loop=0, palettesize=256) as writer:
             for frame_path in [f"frame_{i}.png" for i in range(len(pil_images))]:
                 img = imageio.imread(os.path.join(output_dir, frame_path))
                 resized_img = Image.fromarray(img).resize((800, 960), resample=Image.LANCZOS)
                 writer.append_data(resized_img)
+
 
     except Exception as e:
         st.error(f"Erreur lors de la création du timelapse : {e}")
