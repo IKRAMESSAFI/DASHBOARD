@@ -83,23 +83,17 @@ def app():
     st.title(f" Timelapses permettant  de naviguer entre les différents jours de l'attribut {selected_attribute}")
 
     # Utiliser leafmap pour créer le timelapse
-    # Use a default directory path
-    import os
-
-    # Specify the default directory path
-    default_output_dir = "/home/user/timelapse_frames"
-
-    # Check if the directory exists, create it if not
-    output_dir = st.sidebar.text_input("Enter the output directory path:", default_output_dir)
+    # Utiliser leafmap pour créer le timelapse
+    output_dir = "output_directory"
+    # Check and create the directory if it doesn't exist
     try:
         os.makedirs(output_dir, exist_ok=True)
-        st.sidebar.success(f"Output Directory: {output_dir}")
+        print(f"Output Directory: {output_dir}")
     except Exception as e:
-        st.sidebar.error(f"Error creating directory: {e}")
-        st.stop()
+        print(f"Error creating directory: {e}")
 
+    output_gif_path = os.path.join(output_dir, f'output_timelapse_{selected_attribute}.gif')
 
-    # Check and create the directory if it doesn't exist
     try:
         os.makedirs(output_dir, exist_ok=True)
         print(f"Output Directory: {output_dir}")
