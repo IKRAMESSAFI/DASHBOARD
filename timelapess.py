@@ -151,7 +151,7 @@ def app():
     gif_layer = folium.raster_layers.ImageOverlay(
         gif_path,
         bounds=bounds,
-        opacity=0.7,
+        opacity=0,
         name='GIF Layer'
     ).add_to(m)
 
