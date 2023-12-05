@@ -84,7 +84,20 @@ def app():
 
     # Utiliser leafmap pour créer le timelapse
     # Use a default directory path
-    output_dir = "/home/user/timelapse_frames"
+    import os
+
+    # Specify the default directory path
+    default_output_dir = "/home/user/timelapse_frames"
+
+    # Check if the directory exists, create it if not
+    output_dir = st.sidebar.text_input("Enter the output directory path:", default_output_dir)
+    try:
+        os.makedirs(output_dir, exist_ok=True)
+        st.sidebar.success(f"Output Directory: {output_dir}")
+    except Exception as e:
+        st.sidebar.error(f"Error creating directory: {e}")
+        st.stop()
+
 
     # Check and create the directory if it doesn't exist
     try:
