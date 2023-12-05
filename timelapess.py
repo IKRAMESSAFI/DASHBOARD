@@ -39,11 +39,7 @@ def app():
     # Charger les données depuis le fichier GeoParquet
     file_url = "https://ikramessafi.github.io/DATAPARQUET/DONNEE_MAROC.parquet"
     file_path = download_file(file_url)
-    try:
-        gdf = gpd.read_parquet(file_path)
-    except Exception as e:
-        st.error(f"Erreur lors du chargement des données : {e}")
-        st.stop()
+    gdf = gpd.read_parquet(file_path)
 
     # Dictionnaire des fichiers GeoTIFF correspondant à chaque attribut
     raster_paths = {
