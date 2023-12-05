@@ -7,27 +7,29 @@ def app():
     import imageio
     import folium
     import numpy as np
-
-    import matplotlib.cm as cm  # Ajout de cette ligne
+    import rasterio
+    import matplotlib.cm as cm
     from branca.colormap import LinearColormap
     from streamlit_folium import folium_static, st_folium
     import time
     import requests
     from io import BytesIO
+
     # Function to read the GeoTIFF file with rasterio
     def download_file(url):
-            response = requests.get(url)
-            return BytesIO(response.content)
+        response = requests.get(url)
+        return BytesIO(response.content)
+
     def read_geotiff(url1):
         response1 = requests.get(url1)
-        dataset = rasterio.open(BytesIO(response1.content))
-        return dataset
+        with rasterio.open(BytesIO(response1.content)) as dataset:
+            return dataset.read(1)  # Assuming a single band GeoTIFF
+
     def display_loading_message():
         """Display a loading message while data is being loaded."""
         with st.spinner("Chargement des données en cours ... veuillez patienter un peu..."):
             # Simulate a loading delay
             time.sleep(20)
-
 
     # Fonction pour convertir une image en base64
     def image_to_base64(image_path):
@@ -75,7 +77,7 @@ def app():
     }
 
     # Sidebar pour la sélection de l'attribut
-    selected_attribute = st.sidebar.selectbox("Sélectionnez l'attribut à visualiser", ['Indice_Q', 'Taux_occ_','Taux_plu_'])
+    selected_attribute = st.sidebar.selectbox("Sélectionnez l'attribut à visualiser", ['Indice_Q', 'Taux_occ_', 'Taux_plu_'])
 
     # Créer un graphique temporel avec Altair
     st.title(f" Timelapses permettant  de naviguer entre les différents jours de l'attribut {selected_attribute}")
@@ -87,18 +89,21 @@ def app():
 
     try:
         images = list(raster_paths[selected_attribute].values())
-        #st.write(f"Liste des images pour le timelapse : {images}")
+
+        # Create a list to store rasterio.DatasetReader objects
+        raster_datasets = []
+
+        for image_path in images:
+            raster_data = read_geotiff(image_path)
+            raster_datasets.append(raster_data)
 
         # Create a list to store PIL Image objects
         pil_images = []
 
-        for image_path in images:
-            img = Image.open(image_path)
-
-            # Resize the image to the desired size
+        for raster_data in raster_datasets:
+            pil_image = Image.fromarray(raster_data)
             new_size = (800, 960)
-            resized_img = img.resize(new_size, resample=Image.LANCZOS)
-
+            resized_img = pil_image.resize(new_size, resample=Image.LANCZOS)
             pil_images.append(resized_img)
 
         # Save each resized frame as a static image
@@ -111,7 +116,7 @@ def app():
         with imageio.get_writer(gif_path, mode='I', duration=1000, loop=0) as writer:
             for frame_path in [f"frame_{i}.png" for i in range(len(pil_images))]:
                 img = imageio.imread(os.path.join(output_dir, frame_path))
-                resized_img = Image.fromarray(img).resize((800, 960), resample=Image.LANCZOS)  # Ajustez la taille comme souhaité
+                resized_img = Image.fromarray(img).resize((800, 960), resample=Image.LANCZOS)
                 writer.append_data(resized_img)
 
     except Exception as e:
@@ -162,7 +167,3 @@ def app():
 
     # Afficher la carte
     folium_static(m, width=1200, height=700)
-
-
-
-

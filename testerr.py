@@ -6,6 +6,8 @@ import pandas as pd
 import streamlit as st
 import time
 import requests
+from io import BytesIO
+
 def app():
     def download_file(url):
         response = requests.get(url)
